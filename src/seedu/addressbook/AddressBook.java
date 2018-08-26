@@ -461,7 +461,7 @@ public class AddressBook {
      * @return set of keywords as specified by args
      */
     private static Set<String> extractKeywordsFromFindPersonArgs(String findPersonCommandArgs) {
-        return new HashSet<>(splitByWhitespace(findPersonCommandArgs.trim()));
+        return new HashSet<>(splitByWhitespaceAndConvertToLowercase(findPersonCommandArgs.trim()));
     }
 
     /**
@@ -473,7 +473,7 @@ public class AddressBook {
     private static ArrayList<HashMap<PersonProperty, String>> getPersonsWithNameContainingAnyKeyword(Collection<String> keywords) {
         final ArrayList<HashMap<PersonProperty, String>> matchedPersons = new ArrayList<>();
         for (HashMap<PersonProperty, String> person : getAllPersonsInAddressBook()) {
-            final Set<String> wordsInName = new HashSet<>(splitByWhitespace(getNameFromPerson(person)));
+            final Set<String> wordsInName = new HashSet<>(splitByWhitespaceAndConvertToLowercase(getNameFromPerson(person)));
             if (!Collections.disjoint(wordsInName, keywords)) {
                 matchedPersons.add(person);
             }
@@ -1139,13 +1139,19 @@ public class AddressBook {
     }
 
     /**
-     * Splits a source string into the list of substrings that were separated by whitespace.
+     * Splits a source string into the list of substrings that were separated by whitespace
+     * and convert all substrings to lowercase.
      *
      * @param toSplit source string
      * @return split by whitespace
      */
-    private static ArrayList<String> splitByWhitespace(String toSplit) {
-        return new ArrayList<>(Arrays.asList(toSplit.trim().split("\\s+")));
+    private static ArrayList<String> splitByWhitespaceAndConvertToLowercase(String toSplit) {
+        List<String> keywordsList = Arrays.asList(toSplit.trim().split("\\s+"));
+        ArrayList<String> keywords = new ArrayList<String>();
+        for (String keyword : keywordsList) {
+            keywords.add(keyword.toLowerCase());
+        }
+        return keywords;
     }
 
 }
