@@ -14,14 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Scanner;
-import java.util.Set;
+import java.util.*;
 
 /*
  * NOTE : =============================================================
@@ -141,14 +134,11 @@ public class AddressBook {
      * used by the internal String[] storage format.
      * For example, a person's name is stored as the 0th element in the array.
      */
-    private static final int PERSON_DATA_INDEX_NAME = 0;
-    private static final int PERSON_DATA_INDEX_PHONE = 1;
-    private static final int PERSON_DATA_INDEX_EMAIL = 2;
 
-    /**
-     * The number of data elements for a single person.
-     */
-    private static final int PERSON_DATA_COUNT = 3;
+    // The keys for each person's properties
+    private static final String PERSON_PROPERTY_NAME = "name";
+    private static final String PERSON_PROPERTY_EMAIL = "email";
+    private static final String PERSON_PROPERTY_PHONE = "phone";
 
     /**
      * Offset required to convert between 1-indexing and 0-indexing.COMMAND_
@@ -838,8 +828,8 @@ public class AddressBook {
      *
      * @param person whose name you want
      */
-    private static String getNameFromPerson(String[] person) {
-        return person[PERSON_DATA_INDEX_NAME];
+    private static String getNameFromPerson(HashMap<String, String> person) {
+        return person.get(PERSON_PROPERTY_NAME);
     }
 
     /**
@@ -847,18 +837,14 @@ public class AddressBook {
      *
      * @param person whose phone number you want
      */
-    private static String getPhoneFromPerson(String[] person) {
-        return person[PERSON_DATA_INDEX_PHONE];
-    }
+    private static String getPhoneFromPerson(HashMap<String, String> person) { return person.get(PERSON_PROPERTY_PHONE); }
 
     /**
      * Returns given person's email
      *
      * @param person whose email you want
      */
-    private static String getEmailFromPerson(String[] person) {
-        return person[PERSON_DATA_INDEX_EMAIL];
-    }
+    private static String getEmailFromPerson(HashMap<String, String> person) { return person.get(PERSON_PROPERTY_EMAIL); }
 
     /**
      * Creates a person from the given data.
@@ -868,11 +854,11 @@ public class AddressBook {
      * @param email without data prefix
      * @return constructed person
      */
-    private static String[] makePersonFromData(String name, String phone, String email) {
-        final String[] person = new String[PERSON_DATA_COUNT];
-        person[PERSON_DATA_INDEX_NAME] = name;
-        person[PERSON_DATA_INDEX_PHONE] = phone;
-        person[PERSON_DATA_INDEX_EMAIL] = email;
+    private static HashMap<String, String> makePersonFromData(String name, String phone, String email) {
+        final HashMap<String, String> person = new HashMap<String, String>();
+        person.put(PERSON_PROPERTY_NAME, name);
+        person.put(PERSON_PROPERTY_PHONE, phone);
+        person.put(PERSON_PROPERTY_EMAIL, email);
         return person;
     }
 
@@ -882,7 +868,7 @@ public class AddressBook {
      * @param person to be encoded
      * @return encoded string
      */
-    private static String encodePersonToString(String[] person) {
+    private static String encodePersonToString(HashMap<String, String> person) {
         return String.format(PERSON_STRING_REPRESENTATION,
                 getNameFromPerson(person), getPhoneFromPerson(person), getEmailFromPerson(person));
     }
@@ -893,9 +879,9 @@ public class AddressBook {
      * @param persons to be encoded
      * @return encoded strings
      */
-    private static ArrayList<String> encodePersonsToStrings(ArrayList<String[]> persons) {
+    private static ArrayList<String> encodePersonsToStrings(ArrayList<HashMap<String, String>> persons) {
         final ArrayList<String> encoded = new ArrayList<>();
-        for (String[] person : persons) {
+        for (HashMap<String, String> person : persons) {
             encoded.add(encodePersonToString(person));
         }
         return encoded;
@@ -915,12 +901,12 @@ public class AddressBook {
      * @return if cannot decode: empty Optional
      *         else: Optional containing decoded person
      */
-    private static Optional<String[]> decodePersonFromString(String encoded) {
+    private static Optional<HashMap<String, String>> decodePersonFromString(String encoded) {
         // check that we can extract the parts of a person from the encoded string
         if (!isPersonDataExtractableFrom(encoded)) {
             return Optional.empty();
         }
-        final String[] decodedPerson = makePersonFromData(
+        final HashMap<String, String> decodedPerson = makePersonFromData(
                 extractNameFromPersonString(encoded),
                 extractPhoneFromPersonString(encoded),
                 extractEmailFromPersonString(encoded)
@@ -936,10 +922,10 @@ public class AddressBook {
      * @return if cannot decode any: empty Optional
      *         else: Optional containing decoded persons
      */
-    private static Optional<ArrayList<String[]>> decodePersonsFromStrings(ArrayList<String> encodedPersons) {
-        final ArrayList<String[]> decodedPersons = new ArrayList<>();
+    private static Optional<ArrayList<HashMap<String, String>>> decodePersonsFromStrings(ArrayList<String> encodedPersons) {
+        final ArrayList<HashMap<String, String>> decodedPersons = new ArrayList<>();
         for (String encodedPerson : encodedPersons) {
-            final Optional<String[]> decodedPerson = decodePersonFromString(encodedPerson);
+            final Optional<HashMap<String, String>> decodedPerson = decodePersonFromString(encodedPerson);
             if (!decodedPerson.isPresent()) {
                 return Optional.empty();
             }
@@ -1028,10 +1014,10 @@ public class AddressBook {
      *
      * @param person String array representing the person (used in internal data)
      */
-    private static boolean isPersonDataValid(String[] person) {
-        return isPersonNameValid(person[PERSON_DATA_INDEX_NAME])
-                && isPersonPhoneValid(person[PERSON_DATA_INDEX_PHONE])
-                && isPersonEmailValid(person[PERSON_DATA_INDEX_EMAIL]);
+    private static boolean isPersonDataValid(HashMap<String, String> person) {
+        return isPersonNameValid(person.get(PERSON_PROPERTY_NAME))
+                && isPersonPhoneValid(person.get(PERSON_PROPERTY_PHONE))
+                && isPersonEmailValid(person.get(PERSON_PROPERTY_EMAIL));
     }
 
     /*
